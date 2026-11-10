@@ -7,3 +7,6 @@ reportlab
 openpyxl
 pydantic
 httpx
+vaderSentiment
+textblob
+python-multipart

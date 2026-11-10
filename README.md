@@ -1,6 +1,6 @@
 # Dashboard Products
 
-Six local analytics demos cover employee sentiment, competitive pricing, market demand, subscription churn, brand reputation and a sales pipeline. The examples use synthetic data. The public portfolio preserves the standalone dashboard modules and replaces internal sales materials and workforce fixtures with fictional examples.
+Local analytics demos cover employee sentiment, competitive pricing, market demand, subscription churn, brand reputation and a sales pipeline. The examples use synthetic data. The public portfolio preserves the standalone dashboard modules and replaces internal sales materials and workforce fixtures with fictional examples.
 
 | Folder | Example |
 | --- | --- |
@@ -22,3 +22,7 @@ python -m uvicorn app.main:app --host 127.0.0.1 --port 8003
 ```
 
 For the pricing, market and brand dashboards, use the table’s folder and the same `app.main:app` entry point. For the sales workbench, use `app:app`. For employee sentiment, run `python server.py` from its folder. Each UI opens at the loopback address printed during startup. [Related employee sentiment projects](https://github.com/search?q=user%3AMRodriguez2010+topic%3Aemployee-sentiment-analysis&type=repositories)
+
+## Historical source examples
+
+The [archived ratings](public-data/rating-observations.csv) and [star distributions](public-data/rating-distributions.csv) preserve 40 company/platform rows per table, with original blanks and public source links. [Read the snapshot notes](public-data/README.md). The restored [employee-review dashboard](employee-review-dashboard/) includes the original sentiment scoring, topic classification, and reporting code. From that folder, run `python -m uvicorn app.main:app --host 127.0.0.1 --port 8005`. The dashboard uses its original demonstration seed, and `/api/historical/ratings` serves the separately labeled historical observations.
