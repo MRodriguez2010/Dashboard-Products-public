@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brand Reputation & Social Sentiment</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Segoe UI',system-ui,sans-serif;background:#020617;color:#e2e8f0;min-height:100vh}
+        .header{background:linear-gradient(135deg,#0c4a6e 0%,#0ea5e9 50%,#38bdf8 100%);padding:24px 32px;display:flex;justify-content:space-between;align-items:center}
+        .header h1{font-size:24px;font-weight:700} .header h1 span{color:#bae6fd}
+        .controls{display:flex;gap:10px;align-items:center}
+        .controls select{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);padding:8px 14px;border-radius:8px;font-size:13px}
+        .controls select option{background:#0c4a6e;color:#fff}
+        .btn{padding:8px 16px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+        .btn-pdf{background:#ef4444;color:#fff}.btn-pptx{background:#f97316;color:#fff}.btn-xlsx{background:#22c55e;color:#fff}
+        .btn:hover{transform:translateY(-1px);filter:brightness(1.1)}
+        .container{max-width:1440px;margin:0 auto;padding:24px}
+        .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+        .kpi{background:linear-gradient(135deg,#0f172a,#1e293b);border-radius:12px;padding:18px;border:1px solid #334155}
+        .kpi .label{font-size:11px;color:#38bdf8;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+        .kpi .val{font-size:26px;font-weight:700}
+        .kpi .sub{font-size:11px;color:#64748b;margin-top:3px}
+        .kpi:nth-child(1) .val{color:#38bdf8}.kpi:nth-child(2) .val{color:#34d399}.kpi:nth-child(3) .val{color:#f472b6}.kpi:nth-child(4) .val{color:#fbbf24}
+        .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}
+        .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:24px}
+        .card{background:#0f172a;border-radius:12px;padding:20px;border:1px solid #1e293b}
+        .card h3{font-size:15px;font-weight:600;margin-bottom:14px;color:#e0f2fe;display:flex;align-items:center;gap:8px}
+        .chart-box{position:relative;height:280px}
+        .tbl{width:100%;border-collapse:collapse;font-size:12px}
+        .tbl th{background:#1e293b;color:#38bdf8;padding:8px 10px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.5px}
+        .tbl td{padding:8px 10px;border-bottom:1px solid #1e293b}
+        .tbl tr:hover{background:rgba(14,165,233,.08)}
+        .sent-pos{color:#34d399}.sent-neg{color:#ef4444}.sent-neu{color:#94a3b8}
+        .sev-critical{background:rgba(239,68,68,.2);color:#ef4444;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600}
+        .sev-high{background:rgba(249,115,22,.2);color:#f97316;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600}
+        .sev-medium{background:rgba(234,179,8,.2);color:#eab308;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600}
+        .sev-low{background:rgba(34,197,94,.2);color:#22c55e;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600}
+        .mention-card{background:rgba(30,41,59,.5);border:1px solid #334155;border-radius:8px;padding:12px;margin-bottom:8px}
+        .mention-card .mc-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:11px}
+        .mention-card .mc-content{font-size:12px;color:#cbd5e1}
+        .mention-card .mc-meta{font-size:10px;color:#64748b;margin-top:4px}
+        .brand-card{background:linear-gradient(135deg,#0f172a,#1e293b);border:1px solid #334155;border-radius:12px;padding:16px;text-align:center;cursor:pointer;transition:all .3s}
+        .brand-card:hover{border-color:#0ea5e9;transform:translateY(-2px)}
+        .brand-card .emoji{font-size:32px}.brand-card .bname{font-size:14px;font-weight:700;margin:6px 0}
+        .brand-card .bscore{font-size:24px;font-weight:800}.brand-card .bdetail{font-size:10px;color:#64748b}
+        @media(max-width:1024px){.grid-2,.grid-3{grid-template-columns:1fr}.kpi-row{grid-template-columns:repeat(2,1fr)}}
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>🛡️ Brand Reputation & <span>Social Sentiment</span></h1>
+    <div class="controls">
+        <select id="brandFilter"><option value="">All Brands</option></select>
+        <button class="btn btn-pdf" onclick="exportReport('pdf')">📄 PDF</button>
+        <button class="btn btn-pptx" onclick="exportReport('pptx')">📊 PPTX</button>
+        <button class="btn btn-xlsx" onclick="exportReport('xlsx')">📗 XLSX</button>
+    </div>
+</div>
+<div class="container">
+    <div class="kpi-row" id="kpis"></div>
+    <div class="card" style="margin-bottom:24px">
+        <h3>🏢 Brand Reputation Scores</h3>
+        <div id="brandGrid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px"></div>
+    </div>
+    <div class="grid-2">
+        <div class="card"><h3>📈 Reputation Trend</h3><div class="chart-box"><canvas id="trendChart"></canvas></div></div>
+        <div class="card"><h3>📊 Platform Distribution</h3><div class="chart-box"><canvas id="platformChart"></canvas></div></div>
+    </div>
+    <div class="grid-3">
+        <div class="card"><h3>💬 Topic Sentiment</h3><div class="chart-box"><canvas id="topicChart"></canvas></div></div>
+        <div class="card"><h3>🎯 Sentiment Split</h3><div class="chart-box"><canvas id="sentChart"></canvas></div></div>
+        <div class="card"><h3>📡 Platform Sentiment</h3><div class="chart-box"><canvas id="platSentChart"></canvas></div></div>
+    </div>
+    <div class="grid-2">
+        <div class="card">
+            <h3>🚨 Crisis Events</h3>
+            <div style="max-height:340px;overflow-y:auto">
+                <table class="tbl" id="crisisTable"><thead><tr><th>Event</th><th>Brand</th><th>Severity</th><th>Status</th><th>Impact</th></tr></thead><tbody></tbody></table>
+            </div>
+        </div>
+        <div class="card">
+            <h3>🗣️ Recent Mentions</h3>
+            <div id="mentionsFeed" style="max-height:340px;overflow-y:auto"></div>
+        </div>
+    </div>
+    <div class="card" style="margin-top:24px">
+        <h3>⭐ Top Influencers</h3>
+        <table class="tbl" id="infTable"><thead><tr><th>Name</th><th>Platform</th><th>Followers</th><th>Sentiment</th><th>Score</th><th>Brand</th></tr></thead><tbody></tbody></table>
+    </div>
+</div>
+<script>
+const API='/api/v1'; let charts={};
+async function fetchJSON(u){return(await fetch(u)).json()}
+
+async function loadFilters(){
+    const b=await fetchJSON(API+'/brands');
+    const sel=document.getElementById('brandFilter');
+    b.forEach(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=x.emoji+' '+x.name;sel.appendChild(o)});
+    sel.addEventListener('change',()=>loadAll());
+}
+
+async function loadKPIs(){
+    const d=await fetchJSON(API+'/dashboard/overview');
+    document.getElementById('kpis').innerHTML=`
+        <div class="kpi"><div class="label">Total Mentions</div><div class="val">${Number(d.total_mentions).toLocaleString()}</div><div class="sub">${d.total_brands} brands tracked</div></div>
+        <div class="kpi"><div class="label">Positive Sentiment</div><div class="val">${d.positive_pct}%</div><div class="sub">Avg score: ${d.avg_sentiment}</div></div>
+        <div class="kpi"><div class="label">Negative Sentiment</div><div class="val">${d.negative_pct}%</div><div class="sub">${d.active_crises} crisis events</div></div>
+        <div class="kpi"><div class="label">Total Reach</div><div class="val">${(d.total_reach/1e6).toFixed(1)}M</div><div class="sub">${Number(d.total_engagement).toLocaleString()} engagements</div></div>`;
+}
+
+async function loadBrandGrid(){
+    const d=await fetchJSON(API+'/dashboard/brand-scores');
+    document.getElementById('brandGrid').innerHTML=d.map(b=>{
+        const color=b.score>=70?'#34d399':b.score>=50?'#fbbf24':'#ef4444';
+        return `<div class="brand-card"><div class="emoji">${b.emoji}</div><div class="bname">${b.brand}</div>
+            <div class="bscore" style="color:${color}">${b.score}</div>
+            <div class="bdetail">👍 ${b.positive_pct}% · 👎 ${b.negative_pct}%</div>
+            <div class="bdetail">${b.mentions} mentions · ${(b.reach/1e3).toFixed(0)}K reach</div></div>`;
+    }).join('');
+}
+
+async function loadTrend(){
+    const bid=document.getElementById('brandFilter').value;
+    let url=API+'/dashboard/sentiment-trends';
+    if(bid)url+='?brand_id='+bid;
+    const d=await fetchJSON(url);
+    if(charts.trend)charts.trend.destroy();
+    charts.trend=new Chart(document.getElementById('trendChart'),{type:'line',
+        data:{labels:d.map(r=>r.month),datasets:[
+            {label:'Rep Score',data:d.map(r=>r.score),borderColor:'#0ea5e9',backgroundColor:'rgba(14,165,233,.1)',fill:true,tension:.4},
+            {label:'Positive %',data:d.map(r=>r.positive_pct),borderColor:'#34d399',tension:.4,borderDash:[5,5]},
+            {label:'Negative %',data:d.map(r=>r.negative_pct),borderColor:'#ef4444',tension:.4,borderDash:[5,5]}
+        ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#64748b'}}},
+        scales:{x:{ticks:{color:'#475569'},grid:{color:'#1e293b'}},y:{ticks:{color:'#475569'},grid:{color:'#1e293b'}}}}});
+}
+
+async function loadPlatform(){
+    const d=await fetchJSON(API+'/dashboard/platform-breakdown');
+    if(charts.plat)charts.plat.destroy();
+    charts.plat=new Chart(document.getElementById('platformChart'),{type:'doughnut',
+        data:{labels:d.map(r=>r.icon+' '+r.platform),datasets:[{data:d.map(r=>r.count),
+        backgroundColor:['#3b82f6','#ef4444','#0ea5e9','#ec4899','#ef4444','#8b5cf6','#64748b','#f97316'],borderWidth:0}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{color:'#94a3b8',font:{size:11},padding:8}}}}});
+}
+
+async function loadTopics(){
+    const d=await fetchJSON(API+'/dashboard/topics');
+    if(charts.topic)charts.topic.destroy();
+    charts.topic=new Chart(document.getElementById('topicChart'),{type:'bar',
+        data:{labels:d.map(r=>r.topic),datasets:[{label:'Sentiment',data:d.map(r=>r.sentiment),
+        backgroundColor:d.map(r=>r.sentiment>0?'rgba(52,211,153,.7)':'rgba(239,68,68,.7)'),borderRadius:4}]},
+        options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+        scales:{x:{ticks:{color:'#475569'},grid:{color:'#1e293b'}},y:{ticks:{color:'#94a3b8',font:{size:10}},grid:{display:false}}}}});
+}
+
+async function loadSentSplit(){
+    const d=await fetchJSON(API+'/dashboard/overview');
+    if(charts.sent)charts.sent.destroy();
+    const neu=100-d.positive_pct-d.negative_pct;
+    charts.sent=new Chart(document.getElementById('sentChart'),{type:'doughnut',
+        data:{labels:['Positive','Neutral','Negative'],datasets:[{data:[d.positive_pct,neu,d.negative_pct],
+        backgroundColor:['#34d399','#64748b','#ef4444'],borderWidth:0}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#94a3b8'}}}}});
+}
+
+async function loadPlatSent(){
+    const d=await fetchJSON(API+'/dashboard/platform-breakdown');
+    if(charts.platSent)charts.platSent.destroy();
+    charts.platSent=new Chart(document.getElementById('platSentChart'),{type:'radar',
+        data:{labels:d.map(r=>r.platform),datasets:[
+            {label:'Sentiment',data:d.map(r=>(r.sentiment+1)*50),borderColor:'#0ea5e9',backgroundColor:'rgba(14,165,233,.15)',pointBackgroundColor:'#0ea5e9'},
+            {label:'Volume (scaled)',data:d.map(r=>Math.min(100,r.count/5)),borderColor:'#a78bfa',backgroundColor:'rgba(167,139,250,.1)',pointBackgroundColor:'#a78bfa'}
+        ]},options:{responsive:true,maintainAspectRatio:false,
+        scales:{r:{grid:{color:'#1e293b'},pointLabels:{color:'#94a3b8',font:{size:9}},ticks:{display:false}}},
+        plugins:{legend:{labels:{color:'#94a3b8'}}}}});
+}
+
+async function loadCrises(){
+    const d=await fetchJSON(API+'/dashboard/crises');
+    document.querySelector('#crisisTable tbody').innerHTML=d.map(c=>
+        `<tr><td>${c.title}</td><td>${c.brand}</td><td><span class="sev-${c.severity}">${c.severity}</span></td>
+        <td>${c.status}</td><td style="color:#ef4444">${c.impact}</td></tr>`).join('');
+}
+
+async function loadMentions(){
+    const d=await fetchJSON(API+'/dashboard/recent-mentions');
+    document.getElementById('mentionsFeed').innerHTML=d.map(m=>{
+        const cls=m.sentiment==='positive'?'sent-pos':m.sentiment==='negative'?'sent-neg':'sent-neu';
+        return `<div class="mention-card"><div class="mc-header"><span><strong>${m.brand}</strong> on ${m.platform}</span>
+            <span class="${cls}">${m.sentiment} (${m.score>0?'+':''}${m.score})</span></div>
+            <div class="mc-content">${m.content}</div>
+            <div class="mc-meta">${m.date} · ${m.topic} · ${Number(m.reach).toLocaleString()} reach · ${Number(m.engagement).toLocaleString()} engagement</div></div>`;
+    }).join('');
+}
+
+async function loadInfluencers(){
+    const d=await fetchJSON(API+'/dashboard/influencers');
+    document.querySelector('#infTable tbody').innerHTML=d.map(i=>{
+        const cls=i.sentiment==='positive'?'sent-pos':i.sentiment==='negative'?'sent-neg':'sent-neu';
+        return `<tr><td><strong>${i.name}</strong></td><td>${i.platform}</td><td>${Number(i.followers).toLocaleString()}</td>
+            <td class="${cls}">${i.sentiment}</td><td>${i.score}/10</td><td>${i.brand}</td></tr>`;
+    }).join('');
+}
+
+function exportReport(fmt){
+    fetch(API+'/reports/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({format:fmt})})
+    .then(r=>r.blob()).then(b=>{const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download='brand_report.'+fmt;a.click();URL.revokeObjectURL(u)});
+}
+
+async function loadAll(){await Promise.all([loadKPIs(),loadBrandGrid(),loadTrend(),loadPlatform(),loadTopics(),loadSentSplit(),loadPlatSent(),loadCrises(),loadMentions(),loadInfluencers()])}
+loadFilters().then(()=>loadAll());
+</script>
+</body>
+</html>

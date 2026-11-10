@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+aiosqlite
+sqlalchemy[asyncio]>=2,<2.1
+python-pptx
+reportlab
+openpyxl
+pydantic
+httpx

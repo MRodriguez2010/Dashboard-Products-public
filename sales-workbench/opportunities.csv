@@ -1,0 +1,6 @@
+account,stage,value,probability_pct
+Sample A,Discovery,18000,20
+Sample B,Proposal,23000,50
+Sample C,Discovery,12000,20
+Sample D,Negotiation,36000,70
+Sample E,Proposal,17000,50

@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Revelio · Employee Sentiment Analysis</title><link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script></head>
+<body><header><div class="brand"><i aria-hidden="true">r.</i> Revelio</div><div class="descriptor">Research toolkit</div><div class="synthetic">Synthetic data</div></header>
+<main><h1>Employee Sentiment Analysis</h1><p class="intro">Compare a company’s survey results with its peers and generate an editable report.</p>
+<div class="workspace"><aside><h2>Report configuration</h2><form id="settings">
+<fieldset><legend>Report type</legend><div class="segments"><label><input type="radio" name="tier" value="Benchmark">Benchmark</label><label><input type="radio" name="tier" value="Full" checked>Full report</label></div></fieldset>
+<label for="company">Focus company</label><select id="company"></select><fieldset><legend>Benchmark companies</legend><div id="peers"></div></fieldset>
+<fieldset><legend>Quarter range</legend><div class="range"><label>From<select id="start"></select></label><label>Through<select id="end"></select></label></div></fieldset>
+<button id="download" type="submit">Download PowerPoint <span aria-hidden="true">↓</span></button><p id="status" role="status"></p></form></aside>
+<article aria-label="Report preview"><div class="previewhead"><span>Report preview</span><span id="period"></span></div><div class="content"><h2 id="focus-title"></h2><p id="finding"></p>
+<section class="metrics"><div><small>Focus favorable</small><strong id="focus-pct"></strong></div><div><small>Peer favorable</small><strong id="peer-pct"></strong></div><div><small>Focus answers</small><strong id="answers"></strong></div></section>
+<h3>Favorable responses by topic</h3><div class="key"><span id="focus-key"></span><span>Pooled peers</span></div><div id="chart"></div><p class="footnote">The gap is the focus share minus the pooled peer share, in percentage points.</p></div></article></div>
+</main></body></html>
