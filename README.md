@@ -1,5 +1,7 @@
 # Dashboard Products
 
+**Employee Sentiment Analysis project family:** [Project guide](https://github.com/MRodriguez2010/Revelio/blob/main/docs/employee-sentiment-analysis-projects.md) · [Revelio interactive demo](https://github.com/MRodriguez2010/Revelio)
+
 Local analytics demos cover employee sentiment, competitive pricing, market demand, subscription churn, brand reputation and a sales pipeline. The examples use synthetic data. The public portfolio preserves the standalone dashboard modules and replaces internal sales materials and workforce fixtures with fictional examples.
 
 | Folder | Example |
